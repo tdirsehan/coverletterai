@@ -376,6 +376,94 @@
             text-decoration: none !important;
         }
 
+        .api-validation {
+            padding: 10px !important;
+            border-radius: 8px !important;
+            font-size: 0.9em !important;
+            font-weight: 600 !important;
+        }
+
+        .validation-status {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+
+        .status-validating {
+            background: rgba(255, 193, 7, 0.1) !important;
+            border: 1px solid #ffc107 !important;
+            color: #856404 !important;
+        }
+
+        .status-valid {
+            background: rgba(40, 167, 69, 0.1) !important;
+            border: 1px solid #28a745 !important;
+            color: #155724 !important;
+        }
+
+        .status-invalid {
+            background: rgba(220, 53, 69, 0.1) !important;
+            border: 1px solid #dc3545 !important;
+            color: #721c24 !important;
+        }
+
+        .status-spinner {
+            width: 16px !important;
+            height: 16px !important;
+            border: 2px solid #ffc107 !important;
+            border-top: 2px solid transparent !important;
+            border-radius: 50% !important;
+            animation: spin 1s linear infinite !important;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .important-notice {
+            background: rgba(255, 193, 7, 0.1) !important;
+            border: 2px solid #ffc107 !important;
+            border-radius: 15px !important;
+            padding: 20px !important;
+            margin-bottom: 30px !important;
+            font-size: 0.95em !important;
+        }
+
+        .notice-header {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            margin-bottom: 15px !important;
+            color: #856404 !important;
+            font-size: 1.1em !important;
+        }
+
+        .notice-icon {
+            font-size: 1.2em !important;
+        }
+
+        .important-notice p {
+            margin-bottom: 12px !important;
+            color: #856404 !important;
+            line-height: 1.6 !important;
+        }
+
+        .important-notice ul {
+            margin: 15px 0 15px 20px !important;
+            color: #856404 !important;
+        }
+
+        .important-notice li {
+            margin-bottom: 8px !important;
+            line-height: 1.5 !important;
+        }
+
+        .important-notice em {
+            color: #6c5700 !important;
+            font-weight: 600 !important;
+        }
+
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr !important;
@@ -446,6 +534,9 @@
                 <label for="apiKey">API Key (Optional):</label>
                 <input type="password" id="apiKey" placeholder="Enter your API key for unlimited access">
                 <div class="placeholder-hint">Leave blank to try demo mode with limited requests</div>
+                <div class="api-validation" id="apiValidation" style="margin-top: 10px; display: none;">
+                    <div class="validation-status" id="validationStatus"></div>
+                </div>
             </div>
             
             <div class="api-setup">
@@ -516,6 +607,22 @@
             </button>
         </div>
         
+        <div class="important-notice">
+            <div class="notice-header">
+                <span class="notice-icon">⚠️</span>
+                <strong>Important Notice</strong>
+            </div>
+            <p><strong>Please carefully review and modify the generated cover letter before submission.</strong> While our AI and template systems create professional academic cover letters, you should:</p>
+            <ul>
+                <li>Read the entire letter thoroughly</li>
+                <li>Verify all information is accurate and relevant</li>
+                <li>Adjust the tone and content to match your research</li>
+                <li>Ensure proper alignment with the target journal</li>
+                <li>Personalize sections to reflect your specific contributions</li>
+            </ul>
+            <p><em>This tool provides a starting point - final responsibility for content accuracy and appropriateness lies with the user.</em></p>
+        </div>
+        
         <div class="output-section">
             <div class="output-header">
                 <h2>Generated Cover Letter</h2>
@@ -532,6 +639,7 @@
     <script>
         let selectedProvider = 'gemini';
         let selectedLength = 'standard';
+        let validationTimeout = null;
 
         // Provider selection handling
         document.querySelectorAll('.api-option').forEach(option => {
@@ -539,12 +647,43 @@
                 document.querySelectorAll('.api-option').forEach(opt => opt.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedProvider = this.dataset.provider;
+                
+                // Re-validate API key when provider changes
+                const apiKey = document.getElementById('apiKey').value.trim();
+                if (apiKey && selectedProvider !== 'template') {
+                    validateApiKey(apiKey);
+                } else {
+                    hideValidation();
+                }
             });
         });
 
         // Length selection handling
         document.getElementById('letterLength').addEventListener('change', function(e) {
             selectedLength = e.target.value;
+        });
+
+        // API key validation
+        document.getElementById('apiKey').addEventListener('input', function(e) {
+            const apiKey = e.target.value.trim();
+            
+            // Clear previous timeout
+            if (validationTimeout) {
+                clearTimeout(validationTimeout);
+            }
+            
+            if (!apiKey) {
+                hideValidation();
+                return;
+            }
+            
+            // Show validating status
+            showValidationStatus('validating', '🔄 Validating API key...', true);
+            
+            // Debounce validation (wait 1 second after user stops typing)
+            validationTimeout = setTimeout(() => {
+                validateApiKey(apiKey);
+            }, 1000);
         });
 
         // Show setup instructions
@@ -645,6 +784,125 @@
                     modal.remove();
                 }
             };
+        }
+
+        // API Key Validation Functions
+        function validateApiKey(apiKey) {
+            if (selectedProvider === 'template') {
+                hideValidation();
+                return;
+            }
+            
+            // Test the API key with a simple request
+            testApiConnection(apiKey)
+                .then(isValid => {
+                    if (isValid) {
+                        showValidationStatus('valid', '✅ API key is valid and working!');
+                    } else {
+                        showValidationStatus('invalid', '❌ API key is invalid or has no quota');
+                    }
+                })
+                .catch(error => {
+                    showValidationStatus('invalid', `❌ Validation failed: ${error.message}`);
+                });
+        }
+
+        async function testApiConnection(apiKey) {
+            try {
+                const testPrompt = "Test connection. Reply with just 'OK'.";
+                
+                // Use the same API configuration but with a simple test
+                const configs = {
+                    gemini: {
+                        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+                        payload: {
+                            contents: [{
+                                parts: [{ text: testPrompt }]
+                            }],
+                            generationConfig: {
+                                maxOutputTokens: 10,
+                                temperature: 0.1
+                            }
+                        }
+                    },
+                    huggingface: {
+                        url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-large',
+                        payload: {
+                            inputs: testPrompt,
+                            parameters: { max_new_tokens: 5 }
+                        },
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    },
+                    together: {
+                        url: 'https://api.together.xyz/v1/chat/completions',
+                        payload: {
+                            model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
+                            messages: [{ role: 'user', content: testPrompt }],
+                            max_tokens: 5
+                        },
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    },
+                    groq: {
+                        url: 'https://api.groq.com/openai/v1/chat/completions',
+                        payload: {
+                            model: 'llama-3.1-8b-instant',
+                            messages: [{ role: 'user', content: testPrompt }],
+                            max_tokens: 5
+                        },
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    },
+                    deepseek: {
+                        url: 'https://api.deepseek.com/v1/chat/completions',
+                        payload: {
+                            model: 'deepseek-chat',
+                            messages: [{ role: 'user', content: testPrompt }],
+                            max_tokens: 5
+                        },
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    }
+                };
+
+                const config = configs[selectedProvider];
+                if (!config) return false;
+
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...(config.headers || {})
+                };
+
+                const response = await fetch(config.url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(config.payload)
+                });
+
+                // Consider it valid if we get any response (even rate limits)
+                // since that means the key is recognized
+                return response.status !== 401 && response.status !== 403;
+
+            } catch (error) {
+                console.log('API test failed:', error);
+                return false;
+            }
+        }
+
+        function showValidationStatus(type, message, showSpinner = false) {
+            const validation = document.getElementById('apiValidation');
+            const status = document.getElementById('validationStatus');
+            
+            validation.style.display = 'block';
+            validation.className = `api-validation status-${type}`;
+            
+            if (showSpinner) {
+                status.innerHTML = `<div class="status-spinner"></div><span>${message}</span>`;
+            } else {
+                status.innerHTML = message;
+            }
+        }
+
+        function hideValidation() {
+            const validation = document.getElementById('apiValidation');
+            validation.style.display = 'none';
         }
 
         // AI Cover Letter Generation
