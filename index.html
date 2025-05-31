@@ -778,27 +778,32 @@
             
             // Simple validation that just checks if the key looks valid
             let isValidFormat = false;
+            let message = '';
             
             switch(selectedProvider) {
                 case 'gemini':
                     isValidFormat = apiKey.startsWith('AIza') && apiKey.length > 20;
+                    message = isValidFormat ? '✅ Gemini API key format is correct' : '❌ Gemini keys should start with "AIza" and be longer';
                     break;
                 case 'huggingface':
                     isValidFormat = apiKey.startsWith('hf_') && apiKey.length > 10;
+                    message = isValidFormat ? '✅ Hugging Face API key format is correct' : '❌ Hugging Face keys should start with "hf_"';
                     break;
                 case 'together':
                 case 'groq':
                 case 'deepseek':
-                    isValidFormat = apiKey.length > 10;
+                    isValidFormat = apiKey.length > 15;
+                    message = isValidFormat ? '✅ API key format looks correct' : '❌ API key seems too short';
                     break;
                 default:
                     isValidFormat = apiKey.length > 5;
+                    message = isValidFormat ? '✅ API key format looks correct' : '❌ API key seems too short';
             }
             
             if (isValidFormat) {
-                showValidationStatus('valid', '✅ API key format is valid');
+                showValidationStatus('valid', message + ' - Ready to test with generation');
             } else {
-                showValidationStatus('invalid', '❌ API key format appears invalid');
+                showValidationStatus('invalid', message);
             }
         }
 
