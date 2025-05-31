@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Cover Letter Generator</title>
+    <title>AI-Enhanced Academic Cover Letter Generator</title>
     <style>
         * {
             margin: 0;
@@ -31,12 +31,56 @@
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-size: 2.5em;
             background: linear-gradient(45deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .ai-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .ai-config {
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .ai-config h3 {
+            color: #ee5a24;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .form-grid {
@@ -73,7 +117,7 @@
             font-size: 0.95em;
         }
 
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e1e5e9;
@@ -83,7 +127,7 @@
             background: rgba(255, 255, 255, 0.9);
         }
 
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -100,29 +144,65 @@
             min-height: 150px;
         }
 
+        .generate-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
         .generate-btn {
-            width: 100%;
+            flex: 1;
             padding: 15px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
             border: none;
             border-radius: 12px;
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 30px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        .generate-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        .ai-generate {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
         }
 
-        .generate-btn:active {
-            transform: translateY(-1px);
+        .template-generate {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .output-section {
@@ -142,6 +222,24 @@
         .output-header h2 {
             color: #555;
             font-size: 1.4em;
+        }
+
+        .generation-type {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .ai-generated {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .template-generated {
+            background: #667eea;
+            color: white;
         }
 
         .copy-btn {
@@ -180,6 +278,34 @@
             font-size: 0.9em;
         }
 
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-connected {
+            background: #28a745;
+        }
+
+        .status-disconnected {
+            background: #dc3545;
+        }
+
+        .placeholder-hint {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -192,19 +318,41 @@
             h1 {
                 font-size: 2em;
             }
-        }
 
-        .placeholder-hint {
-            font-size: 0.85em;
-            color: #666;
-            margin-top: 5px;
-            font-style: italic;
+            .generate-section {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Academic Cover Letter Generator</h1>
+        <div class="subtitle">
+            <span class="ai-badge">AI Enhanced</span>
+            <span>Professional • Fast • Intelligent</span>
+        </div>
+        
+        <div class="ai-config">
+            <h3>🤖 AI Configuration</h3>
+            <div class="form-group">
+                <label for="apiProvider">AI Provider:</label>
+                <select id="apiProvider">
+                    <option value="huggingface">Hugging Face (Free)</option>
+                    <option value="groq">Groq (Free)</option>
+                    <option value="openrouter">OpenRouter (Free Tier)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="apiKey">API Key:</label>
+                <input type="password" id="apiKey" placeholder="Enter your API key (optional - leave blank for demo mode)">
+                <div class="placeholder-hint">Get free API key from your chosen provider. Leave blank to use template mode.</div>
+            </div>
+            <div class="api-status">
+                <div class="status-dot status-disconnected" id="statusDot"></div>
+                <span id="statusText">Not connected - Template mode active</span>
+            </div>
+        </div>
         
         <div class="form-grid">
             <div class="form-section">
@@ -250,12 +398,22 @@
             </div>
         </div>
         
-        <button class="generate-btn" onclick="generateCoverLetter()">Generate Cover Letter</button>
+        <div class="generate-section">
+            <button class="generate-btn ai-generate" onclick="generateAICoverLetter()">
+                🤖 Generate with AI
+            </button>
+            <button class="generate-btn template-generate" onclick="generateTemplateCoverLetter()">
+                📝 Generate with Template
+            </button>
+        </div>
         
         <div class="output-section">
             <div class="output-header">
                 <h2>Generated Cover Letter</h2>
-                <button class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span class="generation-type template-generated" id="generationType">Template</span>
+                    <button class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+                </div>
             </div>
             <div class="output-text" id="output">Your generated cover letter will appear here...</div>
             <div class="word-count" id="wordCount">Word count: 0</div>
@@ -263,7 +421,99 @@
     </div>
 
     <script>
-        function generateCoverLetter() {
+        let currentApiProvider = 'huggingface';
+        let apiConnected = false;
+
+        // API Configuration
+        const API_CONFIGS = {
+            huggingface: {
+                url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-large',
+                headers: (key) => ({
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json'
+                })
+            },
+            groq: {
+                url: 'https://api.groq.com/openai/v1/chat/completions',
+                headers: (key) => ({
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json'
+                })
+            },
+            openrouter: {
+                url: 'https://openrouter.ai/api/v1/chat/completions',
+                headers: (key) => ({
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json'
+                })
+            }
+        };
+
+        // Update API provider
+        document.getElementById('apiProvider').addEventListener('change', function(e) {
+            currentApiProvider = e.target.value;
+            updateConnectionStatus();
+        });
+
+        // Update connection status
+        function updateConnectionStatus() {
+            const apiKey = document.getElementById('apiKey').value;
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            if (apiKey) {
+                statusDot.className = 'status-dot status-connected';
+                statusText.textContent = `Connected to ${currentApiProvider.toUpperCase()} - AI mode active`;
+                apiConnected = true;
+            } else {
+                statusDot.className = 'status-dot status-disconnected';
+                statusText.textContent = 'Not connected - Template mode active';
+                apiConnected = false;
+            }
+        }
+
+        document.getElementById('apiKey').addEventListener('input', updateConnectionStatus);
+
+        // AI Cover Letter Generation
+        async function generateAICoverLetter() {
+            if (!validateForm()) return;
+            
+            const aiBtn = document.querySelector('.ai-generate');
+            aiBtn.disabled = true;
+            aiBtn.classList.add('loading');
+            aiBtn.textContent = '🤖 Generating with AI...';
+            
+            try {
+                if (!apiConnected) {
+                    throw new Error('No API key provided');
+                }
+                
+                const prompt = createAIPrompt();
+                const aiResponse = await callAI(prompt);
+                
+                if (aiResponse) {
+                    document.getElementById('output').textContent = aiResponse;
+                    document.getElementById('generationType').textContent = 'AI Generated';
+                    document.getElementById('generationType').className = 'generation-type ai-generated';
+                    updateWordCount();
+                } else {
+                    throw new Error('AI generation failed');
+                }
+                
+            } catch (error) {
+                console.log('AI generation failed, falling back to template:', error.message);
+                // Fallback to template
+                generateTemplateCoverLetter();
+                alert('AI generation failed. Generated using template instead. Check your API key or try template mode.');
+            } finally {
+                aiBtn.disabled = false;
+                aiBtn.classList.remove('loading');
+                aiBtn.textContent = '🤖 Generate with AI';
+            }
+        }
+
+        // Create AI prompt
+        function createAIPrompt() {
             const title = document.getElementById('title').value;
             const authors = document.getElementById('authors').value;
             const abstract = document.getElementById('abstract').value;
@@ -272,12 +522,95 @@
             const scope = document.getElementById('scope').value;
             const corresponding = document.getElementById('corresponding-main').value;
             
-            if (!title || !authors || !abstract || !journal || !editor || !scope || !corresponding) {
-                alert('Please fill in all fields to generate the cover letter.');
-                return;
+            return `Generate a professional academic cover letter (approximately 700 words) with the following details:
+
+Manuscript Title: ${title}
+Authors: ${authors}
+Corresponding Author: ${corresponding}
+Journal: ${journal}
+Editor: ${editor}
+Journal Scope: ${scope}
+Abstract: ${abstract}
+
+Requirements:
+- Address the editor by name
+- Clearly state manuscript submission
+- Link research to journal's aims and scope
+- Highlight novelty and contributions
+- Use formal academic tone
+- Include proper structure and closing
+- Approximately 700 words
+
+Generate only the cover letter text, starting with "Dear" and ending with the signature.`;
+        }
+
+        // Call AI API
+        async function callAI(prompt) {
+            const apiKey = document.getElementById('apiKey').value;
+            const config = API_CONFIGS[currentApiProvider];
+            
+            const payload = {
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an expert academic writing assistant specializing in formal cover letters for journal submissions."
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                max_tokens: 1000,
+                temperature: 0.7
+            };
+            
+            const response = await fetch(config.url, {
+                method: 'POST',
+                headers: config.headers(apiKey),
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API request failed: ${response.status}`);
             }
             
-            const coverLetter = `Dear ${editor},
+            const data = await response.json();
+            return data.choices?.[0]?.message?.content || data.generated_text;
+        }
+
+        // Template Cover Letter Generation
+        function generateTemplateCoverLetter() {
+            if (!validateForm()) return;
+            
+            const templateBtn = document.querySelector('.template-generate');
+            templateBtn.disabled = true;
+            templateBtn.classList.add('loading');
+            templateBtn.textContent = '📝 Generating Template...';
+            
+            setTimeout(() => {
+                const coverLetter = generateTemplateContent();
+                document.getElementById('output').textContent = coverLetter;
+                document.getElementById('generationType').textContent = 'Template';
+                document.getElementById('generationType').className = 'generation-type template-generated';
+                updateWordCount();
+                
+                templateBtn.disabled = false;
+                templateBtn.classList.remove('loading');
+                templateBtn.textContent = '📝 Generate with Template';
+            }, 1000);
+        }
+
+        // Generate template content
+        function generateTemplateContent() {
+            const title = document.getElementById('title').value;
+            const authors = document.getElementById('authors').value;
+            const abstract = document.getElementById('abstract').value;
+            const journal = document.getElementById('journal').value;
+            const editor = document.getElementById('editor').value;
+            const scope = document.getElementById('scope').value;
+            const corresponding = document.getElementById('corresponding-main').value;
+            
+            return `Dear ${editor},
 
 I am writing to submit our manuscript entitled "${title}" for consideration for publication in ${journal}. This manuscript represents original research conducted by ${authors}, and I believe it aligns exceptionally well with the journal's mission and will be of significant interest to your readership.
 
@@ -297,8 +630,6 @@ The timing of this submission is particularly opportune, as there is growing int
 
 We believe that the combination of theoretical contribution, methodological innovation, and practical relevance makes our manuscript an ideal fit for ${journal}. The research addresses fundamental questions while providing actionable insights, embodying the type of scholarship that ${journal} consistently publishes. Our findings will undoubtedly generate interest and discussion among your readership, potentially inspiring follow-up research and practical applications.
 
-The comprehensive nature of our study, combined with its novel approach and significant findings, represents exactly the type of contribution that advances the field. We are confident that publication in ${journal} would ensure that this important work reaches the appropriate audience and contributes meaningfully to the ongoing scholarly discourse in the field.
-
 In conclusion, we are confident that our manuscript makes a significant contribution to the literature and aligns perfectly with ${journal}'s editorial mission. The research presents novel findings that advance theoretical understanding while offering practical implications for the broader community. We believe that publication in ${journal} would provide the optimal platform for disseminating this important work to the scientific community.
 
 We appreciate your consideration of our manuscript and look forward to your response. Should you require any additional information or clarification during the review process, please do not hesitate to contact me.
@@ -306,11 +637,21 @@ We appreciate your consideration of our manuscript and look forward to your resp
 Sincerely,
 
 ${corresponding}`;
-            
-            document.getElementById('output').textContent = coverLetter;
-            updateWordCount();
         }
-        
+
+        // Validate form
+        function validateForm() {
+            const fields = ['title', 'authors', 'corresponding-main', 'abstract', 'journal', 'editor', 'scope'];
+            for (let field of fields) {
+                if (!document.getElementById(field).value.trim()) {
+                    alert('Please fill in all fields to generate the cover letter.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Copy to clipboard
         function copyToClipboard() {
             const output = document.getElementById('output');
             const text = output.textContent;
@@ -331,7 +672,8 @@ ${corresponding}`;
                 }, 2000);
             });
         }
-        
+
+        // Update word count
         function updateWordCount() {
             const text = document.getElementById('output').textContent;
             const words = text.trim().split(/\s+/).filter(word => word.length > 0);
