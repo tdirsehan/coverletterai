@@ -607,22 +607,6 @@
             </button>
         </div>
         
-        <div class="important-notice">
-            <div class="notice-header">
-                <span class="notice-icon">⚠️</span>
-                <strong>Important Notice</strong>
-            </div>
-            <p><strong>Please carefully review and modify the generated cover letter before submission.</strong> While our AI and template systems create professional academic cover letters, you should:</p>
-            <ul>
-                <li>Read the entire letter thoroughly</li>
-                <li>Verify all information is accurate and relevant</li>
-                <li>Adjust the tone and content to match your research</li>
-                <li>Ensure proper alignment with the target journal</li>
-                <li>Personalize sections to reflect your specific contributions</li>
-            </ul>
-            <p><em>This tool provides a starting point - final responsibility for content accuracy and appropriateness lies with the user.</em></p>
-        </div>
-        
         <div class="output-section">
             <div class="output-header">
                 <h2>Generated Cover Letter</h2>
@@ -633,6 +617,22 @@
             </div>
             <div class="output-text" id="output">Your generated cover letter will appear here...</div>
             <div class="word-count" id="wordCount">Word count: 0</div>
+            
+            <div class="important-notice" id="importantNotice" style="display: none;">
+                <div class="notice-header">
+                    <span class="notice-icon">⚠️</span>
+                    <strong>Important Notice</strong>
+                </div>
+                <p><strong>Please carefully review and modify the generated cover letter before submission.</strong> While our AI and template systems create professional academic cover letters, you should:</p>
+                <ul>
+                    <li>Read the entire letter thoroughly</li>
+                    <li>Verify all information is accurate and relevant</li>
+                    <li>Adjust the tone and content to match your research</li>
+                    <li>Ensure proper alignment with the target journal</li>
+                    <li>Personalize sections to reflect your specific contributions</li>
+                </ul>
+                <p><em>This tool provides a starting point - final responsibility for content accuracy and appropriateness lies with the user.</em></p>
+            </div>
         </div>
     </div>
 
@@ -809,77 +809,32 @@
 
         async function testApiConnection(apiKey) {
             try {
-                const testPrompt = "Test connection. Reply with just 'OK'.";
-                
-                // Use the same API configuration but with a simple test
-                const configs = {
-                    gemini: {
-                        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-                        payload: {
-                            contents: [{
-                                parts: [{ text: testPrompt }]
-                            }],
-                            generationConfig: {
-                                maxOutputTokens: 10,
-                                temperature: 0.1
-                            }
-                        }
-                    },
-                    huggingface: {
-                        url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-large',
-                        payload: {
-                            inputs: testPrompt,
-                            parameters: { max_new_tokens: 5 }
-                        },
+                // Simple test that works across providers
+                if (selectedProvider === 'gemini') {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                    return response.status === 200;
+                } else if (selectedProvider === 'huggingface') {
+                    const response = await fetch('https://huggingface.co/api/whoami', {
                         headers: { 'Authorization': `Bearer ${apiKey}` }
-                    },
-                    together: {
-                        url: 'https://api.together.xyz/v1/chat/completions',
-                        payload: {
-                            model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
-                            messages: [{ role: 'user', content: testPrompt }],
-                            max_tokens: 5
-                        },
+                    });
+                    return response.status === 200;
+                } else if (selectedProvider === 'together') {
+                    const response = await fetch('https://api.together.xyz/v1/models', {
                         headers: { 'Authorization': `Bearer ${apiKey}` }
-                    },
-                    groq: {
-                        url: 'https://api.groq.com/openai/v1/chat/completions',
-                        payload: {
-                            model: 'llama-3.1-8b-instant',
-                            messages: [{ role: 'user', content: testPrompt }],
-                            max_tokens: 5
-                        },
+                    });
+                    return response.status === 200;
+                } else if (selectedProvider === 'groq') {
+                    const response = await fetch('https://api.groq.com/openai/v1/models', {
                         headers: { 'Authorization': `Bearer ${apiKey}` }
-                    },
-                    deepseek: {
-                        url: 'https://api.deepseek.com/v1/chat/completions',
-                        payload: {
-                            model: 'deepseek-chat',
-                            messages: [{ role: 'user', content: testPrompt }],
-                            max_tokens: 5
-                        },
+                    });
+                    return response.status === 200;
+                } else if (selectedProvider === 'deepseek') {
+                    const response = await fetch('https://api.deepseek.com/v1/models', {
                         headers: { 'Authorization': `Bearer ${apiKey}` }
-                    }
-                };
-
-                const config = configs[selectedProvider];
-                if (!config) return false;
-
-                const headers = {
-                    'Content-Type': 'application/json',
-                    ...(config.headers || {})
-                };
-
-                const response = await fetch(config.url, {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(config.payload)
-                });
-
-                // Consider it valid if we get any response (even rate limits)
-                // since that means the key is recognized
-                return response.status !== 401 && response.status !== 403;
-
+                    });
+                    return response.status === 200;
+                }
+                return false;
             } catch (error) {
                 console.log('API test failed:', error);
                 return false;
@@ -928,6 +883,7 @@
                     document.getElementById('generationType').textContent = 'AI Generated';
                     document.getElementById('generationType').className = 'generation-type ai-generated';
                     updateWordCount();
+                    showImportantNotice();
                 } else {
                     throw new Error('Empty AI response');
                 }
@@ -1146,6 +1102,7 @@ Generate ONLY the cover letter text, starting with "Dear ${editor}," and ending 
                 document.getElementById('generationType').textContent = 'Template';
                 document.getElementById('generationType').className = 'generation-type template-generated';
                 updateWordCount();
+                showImportantNotice();
                 
                 templateBtn.disabled = false;
                 templateBtn.classList.remove('loading');
@@ -1284,6 +1241,13 @@ ${corresponding}`;
             const words = text.trim().split(/\s+/).filter(word => word.length > 0);
             const count = words.length;
             document.getElementById('wordCount').textContent = `Word count: ${count}`;
+        }
+
+        // Show important notice after generation
+        function showImportantNotice() {
+            const notice = document.getElementById('importantNotice');
+            notice.style.display = 'block';
+            notice.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     </script>
 </body>
