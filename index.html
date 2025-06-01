@@ -143,8 +143,8 @@
 
         .form-grid {
             display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 30px !important;
+            grid-template-columns: 1fr 1fr 1fr !important;
+            gap: 25px !important;
             margin-bottom: 30px !important;
         }
 
@@ -462,6 +462,12 @@
             font-weight: 600 !important;
         }
 
+        @media (max-width: 1024px) {
+            .form-grid {
+                grid-template-columns: 1fr 1fr !important;
+            }
+        }
+
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr !important;
@@ -531,7 +537,7 @@
             <div class="form-group">
                 <label for="apiKey">API Key (Optional):</label>
                 <input type="password" id="apiKey" placeholder="Enter your API key for unlimited access">
-                <div class="placeholder-hint">Leave blank to try demo mode with limited requests</div>
+                <div class="placeholder-hint">Leave blank to use template mode. Format validation only - actual functionality tested during generation.</div>
                 <div class="api-validation" id="apiValidation" style="display: none;">
                     <div class="validation-status" id="validationStatus"></div>
                 </div>
@@ -545,12 +551,7 @@
         
         <div class="form-grid">
             <div class="form-section">
-                <h2>Manuscript Information</h2>
-                <div class="form-group">
-                    <label for="title">Manuscript Title:</label>
-                    <input type="text" id="title" placeholder="Enter your manuscript title">
-                </div>
-                
+                <h2>Author Information</h2>
                 <div class="form-group">
                     <label for="authors">Authors:</label>
                     <input type="text" id="authors" placeholder="List all authors (e.g., John Smith, Jane Doe, Robert Johnson)">
@@ -563,8 +564,54 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="abstract">Abstract:</label>
+                    <label for="correspondingTitle">Corresponding Author Title/Position:</label>
+                    <input type="text" id="correspondingTitle" placeholder="e.g., Professor, Associate Professor, Research Scientist">
+                </div>
+                
+                <div class="form-group">
+                    <label for="affiliation">Institution/Affiliation:</label>
+                    <input type="text" id="affiliation" placeholder="University or institution name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="contactEmail">Contact Email:</label>
+                    <input type="email" id="contactEmail" placeholder="corresponding.author@university.edu">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Manuscript Information</h2>
+                <div class="form-group">
+                    <label for="title">Manuscript Title:</label>
+                    <input type="text" id="title" placeholder="Enter your manuscript title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="manuscriptType">Manuscript Type:</label>
+                    <select id="manuscriptType">
+                        <option value="original">Original Research Paper</option>
+                        <option value="review">Review Article</option>
+                        <option value="letter">Letter/Brief Communication</option>
+                        <option value="case-study">Case Study</option>
+                        <option value="perspective">Perspective/Opinion</option>
+                        <option value="editorial">Editorial</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="abstract">Abstract/Research Summary:</label>
                     <textarea id="abstract" class="large-textarea" placeholder="Paste your manuscript abstract here"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="keywords">Keywords:</label>
+                    <input type="text" id="keywords" placeholder="keyword1, keyword2, keyword3">
+                    <div class="placeholder-hint">Separate keywords with commas</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="wordCount">Word Count:</label>
+                    <input type="number" id="wordCount" placeholder="e.g., 5000">
                 </div>
             </div>
             
@@ -577,7 +624,7 @@
                 
                 <div class="form-group">
                     <label for="editor">Target Editor:</label>
-                    <input type="text" id="editor" placeholder="Dr. [Editor's Full Name]">
+                    <input type="text" id="editor" placeholder="Dr. [Editor's Full Name] or 'Dear Editor' if unknown">
                 </div>
                 
                 <div class="form-group">
@@ -586,12 +633,103 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="specialIssue">Special Issue (if applicable):</label>
+                    <input type="text" id="specialIssue" placeholder="Leave blank if not for a special issue">
+                </div>
+                
+                <div class="form-group">
                     <label for="letterLength">Letter Length:</label>
                     <select id="letterLength">
                         <option value="standard">Standard (~500 words)</option>
                         <option value="short">Short (~300 words)</option>
-                        <option value="long">Long (~700 words)</option>
+                        <option value="long">Long (~750 words)</option>
                     </select>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Research Significance & Impact</h2>
+                <div class="form-group">
+                    <label for="researchAims">Primary Research Aims/Problem Addressed:</label>
+                    <textarea id="researchAims" placeholder="What problem does your research address? What are the main objectives?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="keyFindings">Key Findings/Results:</label>
+                    <textarea id="keyFindings" placeholder="What are your most significant findings? What did you discover?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="significance">Why This Work is Important:</label>
+                    <textarea id="significance" placeholder="Why does this work matter? What is its potential impact or applications?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="novelty">What This Manuscript Adds:</label>
+                    <textarea id="novelty" placeholder="How does this contribute to existing literature? What makes it novel?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="takeHome">Take-Home Message:</label>
+                    <textarea id="takeHome" placeholder="What is the main message readers should remember?"></textarea>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Declarations & Statements</h2>
+                <div class="form-group">
+                    <label for="fundingSource">Funding Sources:</label>
+                    <textarea id="fundingSource" placeholder="List funding sources or state 'No funding received'"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="conflictInterest">Conflicts of Interest:</label>
+                    <textarea id="conflictInterest" placeholder="Declare any conflicts of interest or state 'No conflicts of interest'"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ethicalApproval">Ethical Approval:</label>
+                    <textarea id="ethicalApproval" placeholder="IRB approval, consent information, or state 'Not applicable'"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="aiUsage">AI Tool Usage:</label>
+                    <select id="aiUsage">
+                        <option value="none">No AI tools used</option>
+                        <option value="language">Used for language refinement/grammar checking only</option>
+                        <option value="analysis">Used for data analysis assistance</option>
+                        <option value="writing">Used for writing assistance</option>
+                        <option value="other">Other AI assistance</option>
+                    </select>
+                    <div class="placeholder-hint">Declaration of AI tool usage is increasingly required by journals</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="priorPresentation">Prior Presentations:</label>
+                    <input type="text" id="priorPresentation" placeholder="Conference presentations or leave blank if none">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Additional Information (Optional)</h2>
+                <div class="form-group">
+                    <label for="suggestedReviewers">Suggested Reviewers:</label>
+                    <textarea id="suggestedReviewers" placeholder="Name, Institution, Email (avoid colleagues/collaborators)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="excludedReviewers">Reviewers to Exclude:</label>
+                    <textarea id="excludedReviewers" placeholder="Names and reasons for exclusion"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="priorCommunication">Prior Communication with Journal:</label>
+                    <textarea id="priorCommunication" placeholder="Any previous correspondence or interactions"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="additionalComments">Additional Comments/Requests:</label>
+                    <textarea id="additionalComments" placeholder="Any special requests or additional information"></textarea>
                 </div>
             </div>
         </div>
@@ -873,43 +1011,95 @@
             }
         }
 
-        // Create AI prompt
+        // Create AI prompt - enhanced with comprehensive information
         function createAIPrompt() {
-            const title = document.getElementById('title').value;
-            const authors = document.getElementById('authors').value;
-            const abstract = document.getElementById('abstract').value;
-            const journal = document.getElementById('journal').value;
-            const editor = document.getElementById('editor').value;
-            const scope = document.getElementById('scope').value;
-            const corresponding = document.getElementById('corresponding-main').value;
+            const formData = {
+                title: document.getElementById('title').value,
+                authors: document.getElementById('authors').value,
+                corresponding: document.getElementById('corresponding-main').value,
+                correspondingTitle: document.getElementById('correspondingTitle').value,
+                affiliation: document.getElementById('affiliation').value,
+                contactEmail: document.getElementById('contactEmail').value,
+                manuscriptType: document.getElementById('manuscriptType').value,
+                abstract: document.getElementById('abstract').value,
+                keywords: document.getElementById('keywords').value,
+                wordCount: document.getElementById('wordCount').value,
+                journal: document.getElementById('journal').value,
+                editor: document.getElementById('editor').value,
+                scope: document.getElementById('scope').value,
+                specialIssue: document.getElementById('specialIssue').value,
+                researchAims: document.getElementById('researchAims').value,
+                keyFindings: document.getElementById('keyFindings').value,
+                significance: document.getElementById('significance').value,
+                novelty: document.getElementById('novelty').value,
+                takeHome: document.getElementById('takeHome').value,
+                fundingSource: document.getElementById('fundingSource').value,
+                conflictInterest: document.getElementById('conflictInterest').value,
+                ethicalApproval: document.getElementById('ethicalApproval').value,
+                aiUsage: document.getElementById('aiUsage').value,
+                priorPresentation: document.getElementById('priorPresentation').value,
+                suggestedReviewers: document.getElementById('suggestedReviewers').value,
+                excludedReviewers: document.getElementById('excludedReviewers').value,
+                priorCommunication: document.getElementById('priorCommunication').value,
+                additionalComments: document.getElementById('additionalComments').value
+            };
             
             const lengthGuide = {
                 short: 'approximately 300 words',
                 standard: 'approximately 500 words', 
-                long: 'approximately 700 words'
+                long: 'approximately 750 words'
             };
             
-            return `Write a professional academic cover letter (${lengthGuide[selectedLength]}) for journal submission with these details:
+            return `Write a comprehensive professional academic cover letter (${lengthGuide[selectedLength]}) following best practices for journal submission:
 
-Manuscript: "${title}"
-Authors: ${authors}
-Corresponding Author: ${corresponding}
-Target Journal: ${journal}
-Editor: ${editor}
-Journal Scope: ${scope}
-Abstract: ${abstract}
+AUTHOR INFORMATION:
+- Authors: ${formData.authors}
+- Corresponding Author: ${formData.corresponding}, ${formData.correspondingTitle}
+- Affiliation: ${formData.affiliation}
+- Contact: ${formData.contactEmail}
 
-Requirements:
+MANUSCRIPT DETAILS:
+- Title: "${formData.title}"
+- Type: ${formData.manuscriptType}
+- Keywords: ${formData.keywords}
+- Word Count: ${formData.wordCount}
+- Abstract: ${formData.abstract}
+
+TARGET JOURNAL:
+- Journal: ${formData.journal}
+- Editor: ${formData.editor}
+- Journal Scope: ${formData.scope}
+- Special Issue: ${formData.specialIssue || 'Not applicable'}
+
+RESEARCH SIGNIFICANCE:
+- Research Aims: ${formData.researchAims}
+- Key Findings: ${formData.keyFindings}
+- Significance: ${formData.significance}
+- Novelty/Contribution: ${formData.novelty}
+- Take-Home Message: ${formData.takeHome}
+
+DECLARATIONS:
+- Funding: ${formData.fundingSource}
+- Conflicts of Interest: ${formData.conflictInterest}
+- Ethics: ${formData.ethicalApproval}
+- AI Usage: ${formData.aiUsage}
+- Prior Presentations: ${formData.priorPresentation || 'None'}
+
+ADDITIONAL INFORMATION:
+- Prior Communication: ${formData.priorCommunication || 'None'}
+- Additional Comments: ${formData.additionalComments || 'None'}
+
+REQUIREMENTS:
 - Address editor formally by name
-- State manuscript submission clearly
+- Highlight manuscript significance and novelty
 - Connect research to journal's scope and mission
-- Highlight novelty, methodology, and contributions
+- Include all necessary declarations
 - Emphasize relevance to readership
 - Use professional academic tone
 - Include proper structure and closing
 - Target length: ${lengthGuide[selectedLength]}
 
-Generate ONLY the cover letter text, starting with "Dear ${editor}," and ending with the signature.`;
+Generate ONLY the cover letter text, starting with "Dear ${formData.editor}," and ending with the signature.`;
         }
 
         // Call AI API
@@ -1118,12 +1308,18 @@ Sincerely,
 ${corresponding}`;
         }
 
-        // Validate form
+        // Validate form - updated for new fields
         function validateForm() {
-            const fields = ['title', 'authors', 'corresponding-main', 'abstract', 'journal', 'editor', 'scope'];
-            for (let field of fields) {
-                if (!document.getElementById(field).value.trim()) {
-                    alert('Please fill in all fields to generate the cover letter.');
+            const requiredFields = [
+                'title', 'authors', 'corresponding-main', 'affiliation', 'contactEmail',
+                'abstract', 'journal', 'editor', 'scope',
+                'researchAims', 'keyFindings', 'significance', 'novelty'
+            ];
+            
+            for (let field of requiredFields) {
+                const element = document.getElementById(field);
+                if (!element || !element.value.trim()) {
+                    alert(`Please fill in the required field: ${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}`);
                     return false;
                 }
             }
