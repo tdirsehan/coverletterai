@@ -565,7 +565,121 @@ ${document.getElementById('contactEmail').value ? document.getElementById('conta
             }
         });
 
-        // Auto-save API keys to localStorage (if available)
+        // Google Sheets Integration Functions
+        async function saveToSheets() {
+            const sheetsUrl = document.getElementById('sheetsUrl').value;
+            if (!sheetsUrl) {
+                showStatus('Please enter Google Apps Script Web App URL', 'error');
+                return;
+            }
+
+            const output = document.getElementById('output').textContent;
+            if (output.trim() === 'Your AI-generated cover letter will appear here...') {
+                showStatus('Please generate a cover letter first', 'error');
+                return;
+            }
+
+            showStatus('Saving to Google Sheets...', 'loading');
+
+            try {
+                // Prepare data for Google Sheets
+                const formData = {
+                    timestamp: new Date().toISOString(),
+                    authors: document.getElementById('authors').value,
+                    corresponding: document.getElementById('correspondingMain').value,
+                    title: document.getElementById('title').value,
+                    journal: document.getElementById('journal').value,
+                    editor: document.getElementById('editor').value,
+                    manuscriptType: document.getElementById('manuscriptType').value,
+                    abstract: document.getElementById('abstract').value,
+                    keywords: document.getElementById('keywords').value,
+                    affiliation: document.getElementById('affiliation').value,
+                    coverLetter: output,
+                    wordCount: countWords(output)
+                };
+
+                // Convert to sheet format (first row headers, second row data)
+                const headers = Object.keys(formData);
+                const values = Object.values(formData);
+                const sheetData = [headers, values];
+
+                const response = await fetch(sheetsUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'saveData',
+                        data: sheetData
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('✅ Successfully saved to Google Sheets!', 'success');
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Sheets Save Error:', error);
+                showStatus(`❌ Error saving to Sheets: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadFromSheets() {
+            const sheetsUrl = document.getElementById('sheetsUrl').value;
+            if (!sheetsUrl) {
+                showStatus('Please enter Google Apps Script Web App URL', 'error');
+                return;
+            }
+
+            showStatus('Loading from Google Sheets...', 'loading');
+
+            try {
+                const response = await fetch(`${sheetsUrl}?action=loadData`, {
+                    method: 'GET'
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 1) {
+                    const headers = result.data[0];
+                    const lastRow = result.data[result.data.length - 1]; // Get the most recent entry
+                    
+                    // Create data object
+                    const data = {};
+                    headers.forEach((header, index) => {
+                        data[header] = lastRow[index] || '';
+                    });
+
+                    // Populate form fields
+                    if (data.authors) document.getElementById('authors').value = data.authors;
+                    if (data.corresponding) document.getElementById('correspondingMain').value = data.corresponding;
+                    if (data.title) document.getElementById('title').value = data.title;
+                    if (data.journal) document.getElementById('journal').value = data.journal;
+                    if (data.editor) document.getElementById('editor').value = data.editor;
+                    if (data.manuscriptType) document.getElementById('manuscriptType').value = data.manuscriptType;
+                    if (data.abstract) document.getElementById('abstract').value = data.abstract;
+                    if (data.keywords) document.getElementById('keywords').value = data.keywords;
+                    if (data.affiliation) document.getElementById('affiliation').value = data.affiliation;
+                    
+                    // Load cover letter if available
+                    if (data.coverLetter) {
+                        document.getElementById('output').textContent = data.coverLetter;
+                        document.getElementById('wordCount').textContent = `Word count: ${countWords(data.coverLetter)}`;
+                    }
+
+                    showStatus(`✅ Loaded data from Google Sheets! (${result.data.length - 1} entries found)`, 'success');
+                } else {
+                    showStatus('No data found in Google Sheets', 'error');
+                }
+            } catch (error) {
+                console.error('Sheets Load Error:', error);
+                showStatus(`❌ Error loading from Sheets: ${error.message}`, 'error');
+            }
+        }
+        // Auto-save API keys and settings to localStorage (if available)
         document.getElementById('geminiKey').addEventListener('input', (e) => {
             try {
                 localStorage.setItem('gemini_api_key', e.target.value);
@@ -582,13 +696,24 @@ ${document.getElementById('contactEmail').value ? document.getElementById('conta
             }
         });
 
-        // Load saved keys on page load
+        document.getElementById('sheetsUrl').addEventListener('input', (e) => {
+            try {
+                localStorage.setItem('sheets_url', e.target.value);
+            } catch (e) {
+                // Ignore localStorage errors in artifacts
+            }
+        });
+
+        // Load saved keys and settings on page load
         window.addEventListener('load', () => {
             try {
                 const savedGeminiKey = localStorage.getItem('gemini_api_key');
                 const savedHfToken = localStorage.getItem('hf_token');
+                const savedSheetsUrl = localStorage.getItem('sheets_url');
+                
                 if (savedGeminiKey) document.getElementById('geminiKey').value = savedGeminiKey;
                 if (savedHfToken) document.getElementById('huggingfaceKey').value = savedHfToken;
+                if (savedSheetsUrl) document.getElementById('sheetsUrl').value = savedSheetsUrl;
             } catch (e) {
                 // Ignore localStorage errors in artifacts
             }
